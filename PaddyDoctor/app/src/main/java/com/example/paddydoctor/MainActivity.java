@@ -21,20 +21,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import java.io.File;
-import java.io.IOException;
-
-import okhttp3.Call;
-import okhttp3.Callback;
-import okhttp3.MediaType;
-import okhttp3.MultipartBody;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.RequestBody;
-import okhttp3.Response;
+import java.text.DecimalFormat;
 
 
 public class MainActivity extends AppCompatActivity {
@@ -53,17 +40,22 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
 
+        locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
         locationListener = new LocationListener() {
             @Override
             public void onLocationChanged(Location location) {
                 // Called when the location has changed
-                double latitude = location.getLatitude();
-                double longitude = location.getLongitude();
+                DecimalFormat df = new DecimalFormat("#.#######");
+                double longitude = Double.parseDouble(df.format(location.getLongitude()));
+                double latitude = Double.parseDouble(df.format(location.getLongitude()));
+
                 // Do something with the location data
                 TextView responseTextView = findViewById(R.id.text);
-                responseTextView.setText("Longitude: " + longitude + "Latitude: " + latitude);
+                responseTextView.setText("Longitude: " + longitude + "\n" + "Latitude: " + latitude);
+
+                // Stop receiving location updates after received once
+                locationManager.removeUpdates(this);
             }
 
             @Override
