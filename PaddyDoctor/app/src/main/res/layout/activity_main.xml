@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".MainActivity">
+
+    <!-- add Camera Button to open the Camera -->
+    <Button
+        android:id="@+id/camera_button"
+        android:layout_width="110dp"
+        android:layout_height="50dp"
+        android:layout_marginStart="70dp"
+        android:layout_marginTop="650dp"
+        android:text="Camera" />
+
+    <!-- add Camera Button to open the Camera -->
+    <Button
+        android:id="@+id/gallery_button"
+        android:layout_width="110dp"
+        android:layout_height="50dp"
+        android:layout_marginStart="230dp"
+        android:layout_marginTop="650dp"
+        android:text="Gallery" />
+
+    <!-- add ImageView to display the captured image -->
+    <ImageView
+        android:id="@+id/click_image"
+        android:src="@drawable/image"
+        android:layout_width="350dp"
+        android:layout_height="450dp"
+        android:layout_marginStart="30dp"
+        android:layout_marginTop="70dp"
+        android:layout_marginBottom="10dp" />
+
+    <TextView
+        android:id="@+id/text"
+        android:layout_width="350dp"
+        android:layout_height="123dp"
+        android:layout_marginStart="30dp"
+        android:layout_marginTop="520dp" />
+
+</RelativeLayout>

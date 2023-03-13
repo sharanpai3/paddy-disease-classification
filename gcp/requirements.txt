@@ -1,0 +1,5 @@
+tensorflow
+google-cloud-storage
+Pillow
+flask
+flask_cors
