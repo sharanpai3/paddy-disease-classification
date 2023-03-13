@@ -11,7 +11,6 @@ import android.location.LocationManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
-import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -31,7 +30,7 @@ public class MainActivity extends AppCompatActivity {
     // Define the button and imageview type variable
     Button camera_open_id;
     ImageView click_image_id;
-    private Button mButtonChooseImage;
+    Button mButtonChooseImage;
 
     private LocationManager locationManager;
     private LocationListener locationListener;
@@ -68,46 +67,44 @@ public class MainActivity extends AppCompatActivity {
             public void onProviderDisabled(String provider) {}
         };
 
-        // Check for permission to access location
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
+        // Initialize ImageView and Button objects
+        camera_open_id = findViewById(R.id.camera_button);
+        click_image_id = findViewById(R.id.click_image);
+        mButtonChooseImage = findViewById(R.id.gallery_button);
+
+        // Check for permission to access location and camera
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA)
+                != PackageManager.PERMISSION_GRANTED
+                || ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
                 != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this,
-                    new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 1);
+                    new String[]{Manifest.permission.CAMERA, Manifest.permission.ACCESS_FINE_LOCATION}, 1);
+
         } else {
             // Request location updates
             locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER,
                     0, 0, locationListener);
         }
 
-
-
-        // Ask permission to open image
-        String[] permissions = { Manifest.permission.CAMERA };
-        ActivityCompat.requestPermissions(this, permissions, pic_id);
-
-        // By ID we can get each component which id is assigned in XML file get Buttons and imageview.
-        camera_open_id = findViewById(R.id.camera_button);
-        click_image_id = findViewById(R.id.click_image);
-
-        // Initialize ImageView and Button objects
-        // mImageView = findViewById(R.id.click_image);
-        mButtonChooseImage = findViewById(R.id.gallery_button);
-
         // Set OnClickListener on button to launch image picker
-        mButtonChooseImage.setOnClickListener(view -> openFileChooser());
+        mButtonChooseImage.setOnClickListener(
+                v -> {
+                    // Create an Intent object to pick an image from gallery
+                    Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+
+                    // Start the activity with image_picker, and request PICK_IMAGE_REQUEST id
+                    startActivityForResult(intent, PICK_IMAGE_REQUEST);
+                });
 
         // Camera_open button is for open the camera and add the setOnClickListener in this button
         camera_open_id.setOnClickListener(
-            new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
+                v -> {
                     // Create the camera_intent ACTION_IMAGE_CAPTURE it will open the camera for capture the image
                     Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-                    // Start the activity with camera_intent, and request pic id
 
+                    // Start the activity with camera_intent, and request pic id
                     startActivityForResult(intent, pic_id);
-                }
-        });
+                });
 
     }
 
@@ -117,7 +114,7 @@ public class MainActivity extends AppCompatActivity {
         super.onActivityResult(requestCode, resultCode, data);
 
         // Match the request 'pic id with requestCode
-        if (requestCode == pic_id ) {
+        if (requestCode == pic_id && resultCode == RESULT_OK && data != null) {
             // BitMap is data structure of image file which store the image in memory
             Bitmap photo = (Bitmap)data.getExtras().get("data");
             // Set the image in imageview for display
@@ -129,14 +126,6 @@ public class MainActivity extends AppCompatActivity {
             click_image_id.setImageURI(imageUri);
         }
     }
-
-    // Method to launch image picker
-    private void openFileChooser() {
-        // Create an Intent object to pick an image from gallery
-        Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
-        startActivityForResult(intent, PICK_IMAGE_REQUEST);
-    }
-
 
     // Handle permission request response
     @Override
@@ -153,45 +142,4 @@ public class MainActivity extends AppCompatActivity {
             }
         }
     }
-
-/*    private void sendImage(File file) {
-        OkHttpClient client = new OkHttpClient();
-
-        RequestBody requestBody = new MultipartBody.Builder()
-                .setType(MultipartBody.FORM)
-                .addFormDataPart("image", file.getName(),
-                        RequestBody.create(MediaType.parse("image/*"), file))
-                .build();
-
-        Request request = new Request.Builder()
-                .url("https://us-central1-paddy-disease-classification.cloudfunctions.net/predict")
-                .post(requestBody)
-                .build();
-
-        client.newCall(request).enqueue(new Callback() {
-            @Override
-            public void onFailure(Call call, IOException e) {
-                // Handle the error
-            }
-
-            @Override
-            public void onResponse(Call call, Response response) throws IOException {
-                String responseData = response.body().string();
-                try {
-                    JSONObject jsonObject = new JSONObject(responseData);
-                    String className = jsonObject.getString("class");
-                    double confidence = jsonObject.getDouble("confidence");
-                    TextView responseTextView = findViewById(R.id.text);
-                    responseTextView.setText("Class: " + className);
-
-                    // Use the class name and confidence value as required
-                } catch (JSONException e) {
-                    // Handle the JSON parsing error
-                    String className = "Unknown";
-                    TextView responseTextView = findViewById(R.id.text);
-                    responseTextView.setText("Class: " + className);
-                }
-            }
-        });
-    }*/
 }
