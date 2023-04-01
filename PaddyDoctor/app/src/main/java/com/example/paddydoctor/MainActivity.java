@@ -33,9 +33,10 @@ public class MainActivity extends AppCompatActivity {
     private static final String ROOT_URL = "https://us-central1-paddy-disease-classification.cloudfunctions.net/predict";
 
     // Define the button and imageview type variable
-    Button camera_open_id;
-    ImageView click_image_id;
-    Button mButtonChooseImage;
+    Button camera_open_id, mButtonChooseImage;
+    ImageView imageView;
+    TextView text;
+
 
     private LocationManager locationManager;
     private LocationListener locationListener;
@@ -74,8 +75,9 @@ public class MainActivity extends AppCompatActivity {
 
         // Initialize ImageView and Button objects
         camera_open_id = findViewById(R.id.camera_button);
-        click_image_id = findViewById(R.id.click_image);
+        imageView = findViewById(R.id.imageView);
         mButtonChooseImage = findViewById(R.id.gallery_button);
+        text =  findViewById(R.id.text);
 
         // Check for permission to access location and camera
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA)
