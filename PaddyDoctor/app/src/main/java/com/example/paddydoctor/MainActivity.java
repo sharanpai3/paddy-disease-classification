@@ -101,17 +101,7 @@ public class MainActivity extends AppCompatActivity {
                     0, 0, locationListener);
         }
 
-        // Set OnClickListener on button to launch image picker
-        mButtonChooseImage.setOnClickListener(
-                v -> {
-                    // Create an Intent object to pick an image from gallery
-                    Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
-
-                    // Start the activity with image_picker, and request PICK_IMAGE_REQUEST id
-                    startActivityForResult(intent, PICK_IMAGE_REQUEST);
-                });
-
-        // Camera_open button is for open the camera and add the setOnClickListener in this button
+        // Camera_open button is for opening the camera and add the setOnClickListener in this button
         camera_open_id.setOnClickListener(
                 v -> {
                     // Create the camera_intent ACTION_IMAGE_CAPTURE it will open the camera for capture the image
@@ -121,6 +111,36 @@ public class MainActivity extends AppCompatActivity {
                     startActivityForResult(intent, pic_id);
                 });
 
+        // Upload file through the upload button
+        mButtonChooseImage.setOnClickListener(v -> {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                if (!Environment.isExternalStorageManager()) {
+                    Intent intent = new Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION);
+                    Uri uri = Uri.fromParts("package", getPackageName(), null);
+                    intent.setData(uri);
+                    startActivity(intent);
+                } else {
+                    showFileChooser();
+                }
+            } else {
+                if ((ContextCompat.checkSelfPermission(getApplicationContext(),
+                        Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) && (ContextCompat.checkSelfPermission(getApplicationContext(),
+                        Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED)) {
+                    if ((ActivityCompat.shouldShowRequestPermissionRationale(MainActivity.this,
+                            Manifest.permission.WRITE_EXTERNAL_STORAGE)) && (ActivityCompat.shouldShowRequestPermissionRationale(MainActivity.this,
+                            Manifest.permission.READ_EXTERNAL_STORAGE))) {
+
+                    } else {
+                        ActivityCompat.requestPermissions(MainActivity.this,
+                                new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE},
+                                REQUEST_PERMISSIONS);
+                    }
+                } else {
+                    showFileChooser();
+                }
+            }
+        });
+
     }
 
     @Override
@@ -128,17 +148,46 @@ public class MainActivity extends AppCompatActivity {
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
-        // Match the request 'pic id with requestCode
+        // Match the request 'pic id with requestCode45
+        // Displaying image taken on Camera
         if (requestCode == pic_id && resultCode == RESULT_OK && data != null) {
             // BitMap is data structure of image file which store the image in memory
             Bitmap photo = (Bitmap)data.getExtras().get("data");
+            if (photo != null) {
+                uploadBitmap(photo);
+                imageView.setImageBitmap(photo);
+            } else {
+                Log.e("MainActivity", "photo is null");
+            }
+
+/*            uploadBitmap(photo);
             // Set the image in imageview for display
-            click_image_id.setImageBitmap(photo);
+            imageView.setImageBitmap(photo);*/
         }
+
+        // When the Gallery button is clicked
         else if (requestCode == PICK_IMAGE_REQUEST && resultCode == RESULT_OK && data != null && data.getData() != null) {
             // Get the selected image URI and set it to ImageView
             Uri imageUri = data.getData();
-            click_image_id.setImageURI(imageUri);
+            String filePath = getPath(imageUri);
+            imageView.setImageURI(imageUri);
+
+            if (filePath != null) {
+                try {
+                    Log.d("filePath", String.valueOf(filePath));
+                    Bitmap bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), imageUri);
+                    uploadBitmap(bitmap);
+                    imageView.setImageBitmap(bitmap);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+            else
+            {
+                Toast.makeText(
+                        MainActivity.this,"no image selected",
+                        Toast.LENGTH_LONG).show();
+            }
         }
     }
 
@@ -156,5 +205,11 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         }
+    }
+    private void showFileChooser() {
+        Intent intent = new Intent();
+        intent.setType("image/*");
+        intent.setAction(Intent.ACTION_GET_CONTENT);
+        startActivityForResult(Intent.createChooser(intent, "Select Picture"), PICK_IMAGE_REQUEST);
     }
 }
