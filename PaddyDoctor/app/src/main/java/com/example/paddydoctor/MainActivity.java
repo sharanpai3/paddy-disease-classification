@@ -1,15 +1,19 @@
 package com.example.paddydoctor;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
 import android.provider.MediaStore;
 import android.widget.Button;
 import android.widget.ImageView;
@@ -25,8 +29,9 @@ import java.text.DecimalFormat;
 
 public class MainActivity extends AppCompatActivity {
     // Define the pic id
-    private static final int pic_id = 123;
-    private static final int PICK_IMAGE_REQUEST = 1;
+    private static final int pic_id = 123, PICK_IMAGE_REQUEST = 1, REQUEST_PERMISSIONS = 100;
+    private static final String ROOT_URL = "https://us-central1-paddy-disease-classification.cloudfunctions.net/predict";
+
     // Define the button and imageview type variable
     Button camera_open_id;
     ImageView click_image_id;
@@ -50,8 +55,8 @@ public class MainActivity extends AppCompatActivity {
                 double latitude = Double.parseDouble(df.format(location.getLongitude()));
 
                 // Do something with the location data
-                TextView responseTextView = findViewById(R.id.text);
-                responseTextView.setText("Longitude: " + longitude + "\n" + "Latitude: " + latitude);
+/*                TextView responseTextView = findViewById(R.id.text);
+                responseTextView.setText("Longitude: " + longitude + "\n" + "Latitude: " + latitude);*/
 
                 // Stop receiving location updates after received once
                 locationManager.removeUpdates(this);
