@@ -5,8 +5,10 @@ import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.content.res.Resources;
 import android.database.Cursor;
 import android.graphics.Bitmap;
+import android.location.Criteria;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
@@ -45,59 +47,30 @@ import java.util.HashMap;
 import java.util.Map;
 
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements LocationListener {
     // Define the pic id
     private static final int pic_id = 123, PICK_IMAGE_REQUEST = 1, REQUEST_PERMISSIONS = 100;
     private static final String ROOT_URL = "https://us-central1-paddy-disease-classification.cloudfunctions.net/predict";
-
+    public double longitude;
+    public double latitude;
     // Define the button and imageview type variable
     Button camera_open_id, mButtonChooseImage;
     ImageView imageView;
     TextView text;
-
-
+    private String provider;
+    public static double lat;
+    public static double lng;
+    public static String PredictedClass;
     private LocationManager locationManager;
     private LocationListener locationListener;
 
-    @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
         locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-        locationListener = new LocationListener() {
-            @Override
-            public void onLocationChanged(Location location) {
-                // Called when the location has changed
-                DecimalFormat df = new DecimalFormat("#.#######");
-                double longitude = Double.parseDouble(df.format(location.getLongitude()));
-                double latitude = Double.parseDouble(df.format(location.getLongitude()));
-
-                // Do something with the location data
-/*                TextView responseTextView = findViewById(R.id.text);
-                responseTextView.setText("Longitude: " + longitude + "\n" + "Latitude: " + latitude);*/
-
-                // Stop receiving location updates after received once
-                locationManager.removeUpdates(this);
-            }
-
-            @Override
-            public void onStatusChanged(String provider, int status, Bundle extras) {}
-
-            @Override
-            public void onProviderEnabled(String provider) {}
-
-            @Override
-            public void onProviderDisabled(String provider) {}
-        };
-
-        // Initialize ImageView and Button objects
-        camera_open_id = findViewById(R.id.camera_button);
-        imageView = findViewById(R.id.imageView);
-        mButtonChooseImage = findViewById(R.id.gallery_button);
-        text =  findViewById(R.id.text);
-
-        // Check for permission to access location and camera
+        Criteria criteria = new Criteria();
+        provider = locationManager.getBestProvider(criteria, false);
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA)
                 != PackageManager.PERMISSION_GRANTED
                 || ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
@@ -112,12 +85,36 @@ public class MainActivity extends AppCompatActivity {
                             Manifest.permission.WRITE_EXTERNAL_STORAGE,
                             Manifest.permission.READ_EXTERNAL_STORAGE},
                     1);
-
-        } else {
-            // Request location updates
-            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER,
-                    0, 0, locationListener);
         }
+
+        Location location = locationManager.getLastKnownLocation(provider);
+
+        if (location != null) {
+            System.out.println("Provider " + provider + " has been selected.");
+            onLocationChanged(location);
+        } else {
+/*            latituteField.setText("Location not available");
+            longitudeField.setText("Location not available");*/
+        }
+        // Check if location services are enabled
+        boolean isLocationEnabled = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
+        if (!isLocationEnabled) {
+            // Prompt the user to turn on location services
+            Intent intent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
+            startActivity(intent);
+            Toast.makeText(
+                    MainActivity.this,"Please turn on the location",
+                    Toast.LENGTH_LONG).show();
+        }
+
+        // Initialize ImageView and Button objects
+        camera_open_id = findViewById(R.id.camera_button);
+        imageView = findViewById(R.id.imageView);
+        mButtonChooseImage = findViewById(R.id.gallery_button);
+        text =  findViewById(R.id.text);
+
+        ProgressBar progressBar = findViewById(R.id.progressBar);
+        progressBar.setVisibility(View.INVISIBLE);
 
         // Camera_open button is for opening the camera and add the setOnClickListener in this button
         camera_open_id.setOnClickListener(
@@ -300,6 +297,55 @@ public class MainActivity extends AppCompatActivity {
 
         //adding the request to volley
         Volley.newRequestQueue(this).add(volleyMultipartRequest);
+    }
+    /* Request updates at startup */
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            // TODO: Consider calling
+            //    ActivityCompat#requestPermissions
+            // here to request the missing permissions, and then overriding
+            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+            //                                          int[] grantResults)
+            // to handle the case where the user grants the permission. See the documentation
+            // for ActivityCompat#requestPermissions for more details.
+            return;
+        }
+        locationManager.requestLocationUpdates(provider, 400, 1, this);
+    }
+
+    /* Remove the locationlistener updates when Activity is paused */
+    @Override
+    protected void onPause() {
+        super.onPause();
+        locationManager.removeUpdates(this);
+    }
+
+    @Override
+    public void onLocationChanged(Location location) {
+        lat = location.getLatitude();
+        lng = location.getLongitude();
+/*        latituteField.setText(String.valueOf(lat));
+        longitudeField.setText(String.valueOf(lng));*/
+    }
+
+    @Override
+    public void onStatusChanged(String provider, int status, Bundle extras) {
+        // TODO Auto-generated method stub
+    }
+
+    @Override
+    public void onProviderEnabled(String provider) {
+        Toast.makeText(this, "Enabled new provider " + provider,
+                Toast.LENGTH_SHORT).show();
+
+    }
+
+    @Override
+    public void onProviderDisabled(String provider) {
+        Toast.makeText(this, "Disabled provider " + provider,
+                Toast.LENGTH_SHORT).show();
     }
 
 }
