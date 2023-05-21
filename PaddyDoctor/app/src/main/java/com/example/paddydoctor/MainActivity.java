@@ -55,7 +55,7 @@ import java.util.Map;
 public class MainActivity extends AppCompatActivity implements LocationListener {
     // Define the pic id
     private static final int pic_id = 123, PICK_IMAGE_REQUEST = 1, REQUEST_PERMISSIONS = 100;
-    private static final String ROOT_URL = "https://us-central1-paddy-disease-classification.cloudfunctions.net/predict";
+    private static final String ROOT_URL = "https://asia-south1-eternal-courage-385613.cloudfunctions.net/predict";
     public double longitude;
     public double latitude;
     // Define the button and imageview type variable
@@ -272,7 +272,7 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
         bitmap.compress(Bitmap.CompressFormat.PNG, 80, byteArrayOutputStream);
         return byteArrayOutputStream.toByteArray();
     }
-
+    KvkFinder kv = new KvkFinder();
     private void uploadBitmap(final Bitmap bitmap) {
         int timeout = 30000; // 30 seconds
         // Show the progress bar until result is received
@@ -288,6 +288,7 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
         TextView responseHelpView = findViewById(R.id.help);
         responseHelpView.setText("");
 
+        String url = ROOT_URL + "?lat=" + lat + "&lng=" + lng;
         VolleyMultipartRequest volleyMultipartRequest = new VolleyMultipartRequest(Request.Method.POST, url,
                 new Response.Listener<NetworkResponse>() {
 
@@ -296,8 +297,10 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
                             JSONObject obj = new JSONObject(new String(response.data));
                             String result1 = obj.getString("class") + " (" + obj.getString("confidence") + "%)";
                             PredictedClass = obj.getString("class");
+                            String result2 = kv.KvkFinders(lat,lng);
+                            String result = result1/*+"\n"+result2*/;
                             String help = "Seeking help? Click here.";
-                            responseTextView.setText(result1);
+                            responseTextView.setText(result);
                             responseHelpView.setText(help);
                             if (progressBar != null) {
                                 progressBar.setVisibility(View.INVISIBLE);
