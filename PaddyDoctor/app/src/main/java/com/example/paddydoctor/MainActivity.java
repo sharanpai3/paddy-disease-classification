@@ -51,6 +51,12 @@ import java.text.DecimalFormat;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.osmdroid.config.Configuration;
+import android.os.Bundle;
+import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
+import org.osmdroid.util.GeoPoint;
+import org.osmdroid.views.MapView;
+import org.osmdroid.views.overlay.Marker;
 
 public class MainActivity extends AppCompatActivity implements LocationListener {
     // Define the pic id
