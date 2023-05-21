@@ -19,9 +19,13 @@ import android.os.Environment;
 import android.provider.MediaStore;
 import android.provider.Settings;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -36,6 +40,7 @@ import com.android.volley.Request;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.Volley;
+import com.google.android.material.button.MaterialButton;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -56,7 +61,7 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
     // Define the button and imageview type variable
     Button camera_open_id, mButtonChooseImage;
     ImageView imageView;
-    TextView text;
+    TextView text,help;
     private String provider;
     public static double lat;
     public static double lng;
@@ -155,6 +160,28 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
                 }
             }
         });
+        TextView text = findViewById(R.id.text);
+        text.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // Create an Intent object to navigate to the next activity
+                Intent intent = new Intent(MainActivity.this, HelpPage.class);
+
+                // Start the activity using the intent
+                startActivity(intent);
+            }
+        });
+        TextView help = findViewById(R.id.help);
+        help.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // Create an Intent object to navigate to the next activity
+                Intent intent = new Intent(MainActivity.this, HelpPage.class);
+
+                // Start the activity using the intent
+                startActivity(intent);
+            }
+        });
 
     }
 
@@ -206,21 +233,6 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
         }
     }
 
-    // Handle permission request response
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        if (requestCode == 1) {
-            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
-                        == PackageManager.PERMISSION_GRANTED) {
-                    // Request location updates
-                    locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER,
-                            0, 0, locationListener);
-                }
-            }
-        }
-    }
     private void showFileChooser() {
         Intent intent = new Intent();
         intent.setType("image/*");
@@ -260,15 +272,33 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
 
     private void uploadBitmap(final Bitmap bitmap) {
         int timeout = 30000; // 30 seconds
-        VolleyMultipartRequest volleyMultipartRequest = new VolleyMultipartRequest(Request.Method.POST, ROOT_URL,
+        // Show the progress bar until result is received
+        ProgressBar progressBar = findViewById(R.id.progressBar);
+        if (progressBar != null) {
+            // Show the progress bar
+            progressBar.setVisibility(View.VISIBLE);
+        }
+        // Clear text everytime a new request is made
+        TextView responseTextView = findViewById(R.id.text);
+        responseTextView.setText("");
+
+        TextView responseHelpView = findViewById(R.id.help);
+        responseHelpView.setText("");
+
+        VolleyMultipartRequest volleyMultipartRequest = new VolleyMultipartRequest(Request.Method.POST, url,
                 new Response.Listener<NetworkResponse>() {
-                    @Override
+
                     public void onResponse(NetworkResponse response) {
                         try {
                             JSONObject obj = new JSONObject(new String(response.data));
-                            String result = obj.getString("class") + " (" + obj.getString("confidence") + "%)";
-                            TextView responseTextView = findViewById(R.id.text);
-                            responseTextView.setText(result);
+                            String result1 = obj.getString("class") + " (" + obj.getString("confidence") + "%)";
+                            PredictedClass = obj.getString("class");
+                            String help = "Seeking help? Click here.";
+                            responseTextView.setText(result1);
+                            responseHelpView.setText(help);
+                            if (progressBar != null) {
+                                progressBar.setVisibility(View.INVISIBLE);
+                            }
                         } catch (JSONException e) {
                             e.printStackTrace();
                         }
