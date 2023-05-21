@@ -198,6 +198,7 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
             if (photo != null) {
                 uploadBitmap(photo);
                 imageView.setImageBitmap(photo);
+                imageView.setScaleType(ImageView.ScaleType.FIT_XY);
             } else {
                 Log.e("MainActivity", "photo is null");
             }
@@ -213,6 +214,7 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
             Uri imageUri = data.getData();
             String filePath = getPath(imageUri);
             imageView.setImageURI(imageUri);
+            imageView.setScaleType(ImageView.ScaleType.FIT_XY);
 
             if (filePath != null) {
                 try {
@@ -220,6 +222,7 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
                     Bitmap bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), imageUri);
                     uploadBitmap(bitmap);
                     imageView.setImageBitmap(bitmap);
+                    imageView.setScaleType(ImageView.ScaleType.FIT_XY);
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
